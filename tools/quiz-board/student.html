@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>學生作答端 — 課堂即時答題器</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --border: #334155;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-a: #ef4444;
+      --accent-b: #3b82f6;
+      --accent-c: #eab308;
+      --accent-d: #10b981;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 480px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 16px;
+    }
+    header h1 { font-size: 1.4rem; color: #38bdf8; }
+    header p { font-size: 0.85rem; color: var(--text-muted); margin-top: 4px; }
+
+    /* 身分登錄區 (去識別化) */
+    .identity-box {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .input-group {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    label { font-size: 0.85rem; color: var(--text-muted); font-weight: 600; }
+    input {
+      background: #090d16;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: #fff;
+      font-size: 1rem;
+      outline: none;
+    }
+    input:focus { border-color: #38bdf8; }
+
+    /* 作答按鈕 */
+    .btn-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-top: 10px;
+    }
+    .btn-opt {
+      background: #090d16;
+      border: 2px solid var(--border);
+      color: #fff;
+      font-size: 1.8rem;
+      font-weight: 800;
+      padding: 24px 0;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-opt span { font-size: 0.9rem; font-weight: 500; color: var(--text-muted); }
+    .btn-opt:active { transform: scale(0.96); }
+
+    .btn-a:hover, .btn-a.selected { border-color: var(--accent-a); background: rgba(239, 68, 68, 0.2); }
+    .btn-b:hover, .btn-b.selected { border-color: var(--accent-b); background: rgba(59, 130, 246, 0.2); }
+    .btn-c:hover, .btn-c.selected { border-color: var(--accent-c); background: rgba(234, 179, 8, 0.2); }
+    .btn-d:hover, .btn-d.selected { border-color: var(--accent-d); background: rgba(16, 185, 129, 0.2); }
+
+    /* 狀態提示 */
+    .status-msg {
+      margin-top: 20px;
+      text-align: center;
+      padding: 12px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      display: none;
+    }
+    .msg-success { background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid #22c55e; }
+    .msg-error { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid #ef4444; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <h1>📱 課堂即時答題器</h1>
+      <p>電子計算機二年級 ｜ 免帳號・僅以座號識別</p>
+    </header>
+
+    <div class="identity-box">
+      <div class="input-group">
+        <label for="class-id">班級代號</label>
+        <input type="text" id="class-id" value="201" placeholder="例如 201">
+      </div>
+      <div class="input-group">
+        <label for="seat-no">你的座號 (1-45)</label>
+        <input type="number" id="seat-no" min="1" max="45" placeholder="例如 15">
+      </div>
+    </div>
+
+    <div style="margin-bottom: 12px; font-weight: 600; color: #38bdf8;">請選擇你的答案：</div>
+
+    <div class="btn-grid">
+      <button class="btn-opt btn-a" onclick="selectAnswer('A')">A<span>選項 A</span></button>
+      <button class="btn-opt btn-b" onclick="selectAnswer('B')">B<span>選項 B</span></button>
+      <button class="btn-opt btn-c" onclick="selectAnswer('C')">C<span>選項 C</span></button>
+      <button class="btn-opt btn-d" onclick="selectAnswer('D')">D<span>選項 D</span></button>
+    </div>
+
+    <div id="status-msg" class="status-msg"></div>
+  </div>
+
+  <script>
+    let startTime = Date.now();
+
+    function selectAnswer(opt) {
+      const classId = document.getElementById("class-id").value.trim();
+      const seatNo = document.getElementById("seat-no").value.trim();
+      const msgBox = document.getElementById("status-msg");
+
+      if (!classId || !seatNo) {
+        msgBox.className = "status-msg msg-error";
+        msgBox.innerText = "⚠️ 請先填寫班級代號與座號！";
+        msgBox.style.display = "block";
+        return;
+      }
+
+      // 高亮當前選取
+      document.querySelectorAll(".btn-opt").forEach(b => b.classList.remove("selected"));
+      const btnMap = { A: '.btn-a', B: '.btn-b', C: '.btn-c', D: '.btn-d' };
+      document.querySelector(btnMap[opt]).classList.add("selected");
+
+      const responseTimeMs = Date.now() - startTime;
+
+      // 模擬/送出答題
+      msgBox.className = "status-msg msg-success";
+      msgBox.innerHTML = `✅ 已送出！座號 ${seatNo} 號選擇 <strong>【${opt}】</strong><br><small style="color:#94a3b8;">作答費時: ${(responseTimeMs/1000).toFixed(2)} 秒，靜候老師大螢幕揭曉！</small>`;
+      msgBox.style.display = "block";
+    }
+  </script>
+</body>
+</html>

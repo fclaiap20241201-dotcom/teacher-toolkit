@@ -15,4 +15,4 @@
 - 🔥 Firebase 專案：`my-teaching-tools`
 
 ## 工具清單
-- （尚無）
+- **quiz-board** (`tools/quiz-board/`)：高二電子計算機課堂即時答題大螢幕看板（支援即時選項分佈、排行榜、學生端 Web 與 Python CLI 作答）

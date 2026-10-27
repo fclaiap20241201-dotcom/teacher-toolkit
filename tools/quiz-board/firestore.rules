@@ -1,0 +1,32 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 課堂即時作答集合 (Quiz Board)
+    match /class_sessions/{sessionId} {
+      // 學生端可讀取當前題目與活動狀態
+      allow read: if true;
+      // 僅教師端後端可建立或修改活動狀態
+      allow write: if request.auth != null && request.auth.token.role == 'teacher';
+
+      // 學生作答子集合
+      match /responses/{responseId} {
+        // 大螢幕看板與教師端可即時監聽讀取全班作答分佈
+        allow read: if true;
+
+        // 學生作答寫入規則（嚴格安全校驗）
+        allow create, update: if 
+          // 1. 活動必須處於開放作答狀態
+          get(/databases/$(database)/documents/class_sessions/$(sessionId)).data.is_active == true
+          // 2. 答案必須為 A、B、C、D 四選一
+          && request.resource.data.answer in ['A', 'B', 'C', 'D']
+          // 3. 座號必須為 1 到 50 之間的有效整數
+          && request.resource.data.seat_no is int
+          && request.resource.data.seat_no >= 1 
+          && request.resource.data.seat_no <= 50
+          // 4. Document ID 必須嚴格符合去識別化格式 (如 201_15)
+          && responseId == request.resource.data.class_id + '_' + string(request.resource.data.seat_no);
+      }
+    }
+  }
+}

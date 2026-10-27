@@ -1,0 +1,72 @@
+[
+  {
+    "id": 1,
+    "topic": "搜尋演算法",
+    "question": "在 Python 中對一個包含 1,000,000 筆資料的串列執行「二分搜尋法 (Binary Search)」，最差情況下最多大約需要比對幾次？",
+    "code": "scores = [i for i in range(1000000)] # 已排序\nbinary_search(scores, target=999999)",
+    "options": {
+      "A": "大約 20 次",
+      "B": "大約 1,000 次",
+      "C": "大約 500,000 次",
+      "D": "大約 1,000,000 次"
+    },
+    "answer": "A",
+    "explanation": "二分搜尋的時間複雜度為 O(log2 n)。因為 2^20 ≈ 1,048,576 > 1,000,000，故最多只需約 20 次比對即可找到或確認不存在。"
+  },
+  {
+    "id": 2,
+    "topic": "搜尋演算法前提",
+    "question": "小明寫了一個二分搜尋函式，但對串列 [45, 99, 12, 65, 88] 搜尋 65 時回傳 -1（未找到）。請問最根本的原因是什麼？",
+    "code": "def binary_search(data, target):\n    # ...標準二分搜尋寫法...\n\nsample = [45, 99, 12, 65, 88]\nprint(binary_search(sample, 65)) # 輸出: -1",
+    "options": {
+      "A": "Python 串列不支援二分搜尋法",
+      "B": "傳入的串列未事先由小到大排序",
+      "C": "串列長度必須為偶數才能對半分割",
+      "D": "中間索引 mid 計算時發生浮點數溢位"
+    },
+    "answer": "B",
+    "explanation": "二分搜尋法的必要前提是「資料必須事先經過排序」。未排序的資料無法依中間值大小排除半數資料，必須使用線性搜尋。"
+  },
+  {
+    "id": 3,
+    "topic": "排序演算法",
+    "question": "執行標準「泡沫排序 (Bubble Sort)」將長度為 n 的串列由小到大排序，在最差情況（完全反序）下的時間複雜度為何？",
+    "code": "for i in range(n - 1):\n    for j in range(n - 1 - i):\n        if arr[j] > arr[j + 1]:\n            arr[j], arr[j + 1] = arr[j + 1], arr[j]",
+    "options": {
+      "A": "O(1)",
+      "B": "O(log n)",
+      "C": "O(n)",
+      "D": "O(n^2)"
+    },
+    "answer": "D",
+    "explanation": "泡沫排序外迴圈執行 n-1 輪，內迴圈平均執行約 n/2 次，總比對次數約為 n(n-1)/2，故最差與平均時間複雜度皆為 O(n^2)。"
+  },
+  {
+    "id": 4,
+    "topic": "資料結構",
+    "question": "在文字編輯器的「復原 (Undo / Ctrl+Z)」功能，最適合使用下列哪一種資料結構來實作？",
+    "code": "# 最後輸入的操作，在按 Undo 時必須最先被撤銷",
+    "options": {
+      "A": "佇列 (Queue - FIFO 先進先出)",
+      "B": "堆疊 (Stack - LIFO 後進先出)",
+      "C": "雜湊表 (Hash Table)",
+      "D": "二元搜尋樹 (Binary Search Tree)"
+    },
+    "answer": "B",
+    "explanation": "復原功能遵循「後進先出 (LIFO - Last In First Out)」原則，最新發生的操作必須第一個被還原，因此堆疊 (Stack) 是最理想的資料結構。"
+  },
+  {
+    "id": 5,
+    "topic": "Python 容器特性",
+    "question": "在 Python 中，若需要以學生「座號」快速查詢其成績，且希望查詢的時間複雜度平均達到 O(1)，應使用哪種資料型態？",
+    "code": "# 想要達到直接用座號瞬間查找成績\nstudent_scores = ???",
+    "options": {
+      "A": "串列 (List)",
+      "B": "元組 (Tuple)",
+      "C": "字典 (Dictionary)",
+      "D": "字串 (String)"
+    },
+    "answer": "C",
+    "explanation": "Python 的字典 (dict) 底層為雜湊表 (Hash Table)，能在平均 O(1) 的常數時間內透過 Key 完成精準查詢。"
+  }
+]
